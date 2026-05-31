@@ -1,10 +1,6 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// CONNECTOR SKELETON — fed verbatim to the generator (§7.3).
-// A minimal, correct stdio MCP server with ONE ListTools + ONE CallTool handler.
-// The generator fills in TOOLS[] and the per-tool logic in `handleCall`. The
-// transport/handler structure must NOT change — that's what keeps generation
-// from hallucinating the wrong shape.
-// ─────────────────────────────────────────────────────────────────────────────
+// CONNECTOR SKELETON — generator fills TOOLS[] and handleCall().
+// Allowed: node:fs/promises, node:path, node:crypto, @modelcontextprotocol/sdk, global fetch().
+// For HTTP APIs use fetch() directly — it is built into Node 18+ (no import needed).
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {

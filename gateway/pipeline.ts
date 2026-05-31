@@ -9,6 +9,7 @@ import { buildPrompt } from "../generator/prompt.ts";
 import { scanCode, patchInstruction, type ScanResult } from "../opsera/scan.ts";
 import { smokeTest } from "../daytona/sandbox.ts";
 import { connectorLaunch } from "./launch.ts";
+import { saveConnector } from "./connector-store.ts";
 import type { ConnectorManager } from "./connector-manager.ts";
 import type { Dashboard } from "./dashboard-server.ts";
 
@@ -90,6 +91,10 @@ export async function runPipeline(
     const total = (await manager.listTools()).length;
     stage("register", "ok", `${name} live with ${tools.length} tools`);
     dash.broadcast({ type: "tool_count", count: total });
+    // 7) Persist to Tigris so the connector survives redeploy
+    saveConnector(name, gen.code).catch((err) =>
+      console.error(`[pipeline] store save failed: ${(err as Error).message}`),
+    );
     return { name, registered: true, generationSource: gen.source, scan, patched, toolCount: total };
   } catch (err) {
     stage("register", "fail", (err as Error).message);
