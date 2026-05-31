@@ -153,7 +153,7 @@ export function createGatewayServer(): Server {
       }
 
       const result = await runPipeline(
-        { name: serviceId, serviceDescription: entry.prompt, env },
+        { name: serviceId, serviceDescription: entry.prompt, env, serviceId },
         manager,
         dash,
       );
@@ -234,11 +234,21 @@ export async function bootstrapConnectors(): Promise<void> {
   if (saved.length > 0) {
     console.error(`[gateway] restoring ${saved.length} connector(s) from Tigris store`);
   }
-  for (const { name, code } of saved) {
+  for (const { name, code, envKeys } of saved) {
     if (manager.has(name)) continue;
     try {
+      // Rebuild env: read values by key name from current process.env
+      const env: Record<string, string> = {};
+      for (const k of envKeys ?? []) {
+        const v = process.env[k];
+        if (v) env[k] = v;
+      }
+      // Obsidian: fall back to bundled sample vault when no vault path is configured
+      if (name === "obsidian" && !env.OBSIDIAN_VAULT_PATH) {
+        env.OBSIDIAN_VAULT_PATH = DEFAULT_VAULT;
+      }
       const path = await writeConnectorToDisk(CONNECTORS_DIR, name, code);
-      await manager.add({ name, ...connectorLaunch(path) });
+      await manager.add({ name, ...connectorLaunch(path), env });
       console.error(`[gateway] restored "${name}" from store`);
     } catch (err) {
       console.error(`[gateway] failed to restore "${name}": ${(err as Error).message}`);

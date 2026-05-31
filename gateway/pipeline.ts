@@ -16,12 +16,11 @@ import type { Dashboard } from "./dashboard-server.ts";
 const CONNECTORS_DIR = fileURLToPath(new URL("../connectors/", import.meta.url));
 
 export interface PipelineInput {
-  /** Connector id / namespace, e.g. "obsidian". */
   name: string;
-  /** Plain-English service description fed to the generator. */
   serviceDescription: string;
-  /** Env overrides passed to the spawned connector (e.g. vault path). */
   env?: Record<string, string>;
+  /** Catalog service ID (e.g. "obsidian") — stored so the connector can be restored correctly on reboot. */
+  serviceId?: string;
 }
 
 export interface PipelineResult {
@@ -92,7 +91,8 @@ export async function runPipeline(
     stage("register", "ok", `${name} live with ${tools.length} tools`);
     dash.broadcast({ type: "tool_count", count: total });
     // 7) Persist to Tigris so the connector survives redeploy
-    saveConnector(name, gen.code).catch((err) =>
+    const envKeys = input.env ? Object.keys(input.env) : undefined;
+    saveConnector(name, gen.code, input.serviceId, envKeys).catch((err) =>
       console.error(`[pipeline] store save failed: ${(err as Error).message}`),
     );
     return { name, registered: true, generationSource: gen.source, scan, patched, toolCount: total };

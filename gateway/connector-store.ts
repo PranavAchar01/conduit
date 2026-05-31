@@ -1,6 +1,6 @@
 // Tigris-backed persistence for generated connectors.
-// Saves each connector's source to the frontier bucket under conduit-connectors/.
-// On gateway boot, loadSavedConnectors() restores them so they survive redeployment.
+// Stores code + service metadata (never secret values) so connectors survive redeploy.
+// On boot, env values are re-read from process.env by name.
 import {
   S3Client,
   PutObjectCommand,
@@ -11,6 +11,13 @@ import { writeFile, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 
 const PREFIX = "conduit-connectors/";
+
+interface StoreRecord {
+  code: string;
+  serviceId?: string;
+  /** Env var names (NOT values) needed at runtime — values are read from process.env on restore. */
+  envKeys?: string[];
+}
 
 function makeClient(): S3Client | null {
   const bucket = process.env.TIGRIS_BUCKET;
@@ -23,16 +30,22 @@ function makeClient(): S3Client | null {
   });
 }
 
-export async function saveConnector(name: string, code: string): Promise<void> {
+export async function saveConnector(
+  name: string,
+  code: string,
+  serviceId?: string,
+  envKeys?: string[],
+): Promise<void> {
   const s3 = makeClient();
   const bucket = process.env.TIGRIS_BUCKET;
   if (!s3 || !bucket) return;
+  const record: StoreRecord = { code, serviceId, envKeys };
   await s3.send(
     new PutObjectCommand({
       Bucket: bucket,
-      Key: `${PREFIX}${name}.ts`,
-      Body: code,
-      ContentType: "text/plain",
+      Key: `${PREFIX}${name}.json`,
+      Body: JSON.stringify(record),
+      ContentType: "application/json",
     }),
   );
   console.error(`[store] saved connector "${name}" to Tigris`);
@@ -41,6 +54,8 @@ export async function saveConnector(name: string, code: string): Promise<void> {
 export interface StoredConnector {
   name: string;
   code: string;
+  serviceId?: string;
+  envKeys?: string[];
 }
 
 export async function listSavedConnectors(): Promise<StoredConnector[]> {
@@ -51,13 +66,15 @@ export async function listSavedConnectors(): Promise<StoredConnector[]> {
     const list = await s3.send(new ListObjectsV2Command({ Bucket: bucket, Prefix: PREFIX }));
     const results: StoredConnector[] = [];
     for (const obj of list.Contents ?? []) {
-      if (!obj.Key?.endsWith(".ts")) continue;
-      const name = obj.Key.slice(PREFIX.length, -3);
+      if (!obj.Key?.endsWith(".json")) continue;
+      const name = obj.Key.slice(PREFIX.length, -5);
       if (!name) continue;
       try {
         const get = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: obj.Key }));
-        const code = (await get.Body?.transformToString()) ?? "";
-        if (code) results.push({ name, code });
+        const raw = (await get.Body?.transformToString()) ?? "";
+        if (!raw) continue;
+        const record: StoreRecord = JSON.parse(raw);
+        results.push({ name, ...record });
       } catch {
         console.error(`[store] failed to fetch stored connector "${name}"`);
       }
