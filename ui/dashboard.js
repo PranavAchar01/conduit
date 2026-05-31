@@ -51,7 +51,8 @@
   }
 
   function connect() {
-    const ws = new WebSocket(`ws://${location.host}`);
+    const proto = location.protocol === "https:" ? "wss:" : "ws:";
+    const ws = new WebSocket(`${proto}//${location.host}`);
     ws.onopen = () => { footEl.textContent = "connected"; footEl.className = "connected"; };
     ws.onmessage = (m) => { try { handle(JSON.parse(m.data)); } catch {} };
     ws.onclose = () => {
