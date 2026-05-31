@@ -1,0 +1,32 @@
+{
+  "name": "conduit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A local/hosted MCP gateway that federates your connectors behind one endpoint — and writes, hardens, and hot-loads the connector you're missing.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "tsx gateway/http.ts",
+    "gateway": "tsx gateway/index.ts",
+    "gateway:http": "tsx gateway/http.ts",
+    "inspect": "mcp-inspector tsx gateway/index.ts",
+    "hello": "tsx scripts/hello-downstream.ts",
+    "demo": "tsx scripts/demo.ts",
+    "demo:http": "tsx scripts/demo-http.ts",
+    "tigris": "tsx connectors/tigris/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "tsx": "^4.19.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.5.0"
+  }
+}

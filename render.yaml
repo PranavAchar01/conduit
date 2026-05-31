@@ -1,0 +1,57 @@
+# Render Blueprint for Conduit.
+# Deploy: push this repo to GitHub, then in Render → New → Blueprint → pick the repo.
+# Secrets (sync:false) are NOT stored here — set them in the Render dashboard.
+services:
+  - type: web
+    name: conduit
+    runtime: node
+    plan: starter            # 'free' works but spins down when idle (cold demo); 'starter' stays warm
+    buildCommand: npm install
+    startCommand: npm run start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      # ── transport / runtime ──
+      - key: CONDUIT_TRANSPORT
+        value: http
+      # PORT is injected by Render automatically — do NOT set it here.
+
+      # ── gate the public /mcp endpoint (it runs generated code) ──
+      - key: CONDUIT_API_KEY
+        sync: false           # set a strong random value in the dashboard
+
+      # ── generation (Anthropic) ──
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-4-20250514   # verify the current model string for your account
+
+      # ── Opsera (the prize) ──
+      - key: OPSERA_MCP_URL
+        value: https://mcp.opsera.io/mcp
+      - key: OPSERA_SCAN_TOOL
+        value: security-scan              # CONFIRM exact tool name at the Opsera table
+      - key: OPSERA_API_TOKEN
+        sync: false
+
+      # ── Tigris (federation target, S3-compatible) ──
+      - key: TIGRIS_ENDPOINT_URL
+        value: https://t3.storage.dev
+      - key: TIGRIS_REGION
+        value: auto
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: TIGRIS_BUCKET
+        sync: false
+
+      # ── Obsidian target ──
+      # On a cloud box there is no local vault, so we default to the bundled
+      # sample-vault/ (handled in code). Override only if you mount real files.
+
+      # ── Daytona (stretch) ──
+      - key: DAYTONA_ENABLED
+        value: ""
+      - key: DAYTONA_API_KEY
+        sync: false

@@ -1,0 +1,4 @@
+# The Obsidian connector (index.ts) is GENERATED AT RUNTIME by the pipeline.
+# This file just keeps the directory in version control.
+# If you want a guaranteed-present connector before any generation runs, the
+# bundled known-good version lives in generator/fallback-obsidian.ts.

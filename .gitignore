@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.log
+# Generated connectors are written at runtime; keep the dir, ignore the output.
+connectors/obsidian/index.ts
+connectors/*/.smoke-*
+.DS_Store

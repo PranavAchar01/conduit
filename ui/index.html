@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Conduit</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="logo">⌁</span>
+        <div>
+          <h1>Conduit</h1>
+          <p class="tagline">one gateway · federates everything · writes the connector you're missing</p>
+        </div>
+      </div>
+      <div class="counter">
+        <div class="count" id="toolCount">0</div>
+        <div class="count-label">live tools</div>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>Connectors</h2>
+        <ul id="connectors" class="connectors"></ul>
+      </section>
+
+      <section class="panel">
+        <h2>Generation pipeline</h2>
+        <ol id="pipeline" class="pipeline">
+          <li data-stage="generate"><span class="dot"></span><span class="name">generate</span><span class="detail"></span></li>
+          <li data-stage="scan"><span class="dot"></span><span class="name">Opsera scan</span><span class="detail"></span></li>
+          <li data-stage="sandbox"><span class="dot"></span><span class="name">sandbox / smoke</span><span class="detail"></span></li>
+          <li data-stage="register"><span class="dot"></span><span class="name">register + hot-load</span><span class="detail"></span></li>
+        </ol>
+      </section>
+
+      <section class="panel logpanel">
+        <h2>Log</h2>
+        <pre id="log" class="log"></pre>
+      </section>
+    </main>
+
+    <footer id="conn" class="disconnected">connecting…</footer>
+    <script src="dashboard.js"></script>
+  </body>
+</html>
