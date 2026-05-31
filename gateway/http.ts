@@ -21,6 +21,7 @@ import {
   manager,
   dash,
 } from "./core.ts";
+import { CATALOG } from "./catalog.ts";
 
 const PORT = Number(process.env.PORT ?? process.env.DASHBOARD_PORT ?? 4317);
 const API_KEY = process.env.CONDUIT_API_KEY;
@@ -135,6 +136,27 @@ async function main(): Promise<void> {
     const url = (req.url ?? "/").split("?")[0];
     try {
       if (url === "/mcp" || url.startsWith("/mcp/")) return await handleMcp(req, res);
+      if (url === "/catalog") {
+        cors(res);
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify(CATALOG.map((s) => ({
+          id: s.id, name: s.name, description: s.description, envVars: s.envVars,
+        }))));
+        return;
+      }
+      if (url === "/connectors") {
+        cors(res);
+        const tools = await manager.listTools();
+        const out = manager.names().map((name) => ({
+          name,
+          tools: tools.filter((t) => t.name.startsWith(`${name}__`)).map((t) => ({
+            name: t.name, description: t.description,
+          })),
+        }));
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify(out));
+        return;
+      }
       if (url === "/healthz") {
         const count = (await manager.listTools()).length;
         res.writeHead(200, { "content-type": "application/json" });

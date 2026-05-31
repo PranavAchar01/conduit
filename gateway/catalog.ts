@@ -409,6 +409,43 @@ Server name: todoist`,
   },
 
   {
+    id: "hackernews",
+    name: "Hacker News",
+    description: "Fetch top stories, new stories, and search HN — no credentials required",
+    envVars: [],
+    prompt: `Hacker News connector using the public HackerNews Firebase REST API and Algolia search API.
+No auth required. Use global fetch.
+
+Firebase base URL: https://hacker-news.firebaseio.com/v0
+Algolia search URL: https://hn.algolia.com/api/v1
+
+Helper: async function fetchItem(id) { const r = await fetch(\`https://hacker-news.firebaseio.com/v0/item/\${id}.json\`); return r.json(); }
+Helper: async function fetchTopN(endpoint, n) { const r = await fetch(\`https://hacker-news.firebaseio.com/v0/\${endpoint}.json\`); const ids = await r.json(); return Promise.all(ids.slice(0, n).map(fetchItem)); }
+
+Generate exactly these 5 tools:
+
+1. top_stories(limit?)
+   Use fetchTopN("topstories", limit||10).
+   Return numbered list: "{rank}. {title} ({score} pts, {descendants||0} comments) — {url||'[text post]'}"
+
+2. new_stories(limit?)
+   Use fetchTopN("newstories", limit||10). Same format as top_stories.
+
+3. best_stories(limit?)
+   Use fetchTopN("beststories", limit||10). Same format.
+
+4. get_story(id)
+   GET https://hacker-news.firebaseio.com/v0/item/{id}.json
+   Also fetch first 3 comment items (kids array). Format story details + comment previews.
+
+5. search_stories(query, limit?)
+   GET https://hn.algolia.com/api/v1/search?query={encodeURIComponent(query)}&tags=story&hitsPerPage={limit||10}
+   Return: numbered list of "title (points pts) — url" for each hit.
+
+Server name: hackernews`,
+  },
+
+  {
     id: "jira",
     name: "Jira",
     description: "Manage issues, projects, and sprints in Jira Cloud",

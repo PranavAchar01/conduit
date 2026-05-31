@@ -1,49 +1,138 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Conduit</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <header>
-      <div class="brand">
-        <span class="logo">⌁</span>
-        <div>
-          <h1>Conduit</h1>
-          <p class="tagline">one gateway · federates everything · writes the connector you're missing</p>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conduit</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <header>
+    <div class="brand">
+      <span class="logo">⌁</span>
+      <div>
+        <h1>Conduit</h1>
+        <p class="tagline">one gateway · federates everything · writes the connector you're missing</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span id="toolCount">0</span> live tools
+      </div>
+      <button class="btn-chat" id="openChat">+ Create connector</button>
+    </div>
+  </header>
+
+  <!-- ── Home view ───────────────────────────────────────────── -->
+  <div id="view-home">
+
+    <!-- Sponsors -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-label">Powered by</span>
+      </div>
+      <div class="sponsor-grid">
+        <a class="sponsor-card" href="https://tigrisdata.com" target="_blank" style="--c:#06b6d4">
+          <span class="sponsor-icon">🐯</span>
+          <span class="sponsor-name">Tigris</span>
+          <span class="sponsor-desc">Global S3 storage</span>
+        </a>
+        <a class="sponsor-card" href="https://opsera.io" target="_blank" style="--c:#8b5cf6">
+          <span class="sponsor-icon">🛡</span>
+          <span class="sponsor-name">Opsera</span>
+          <span class="sponsor-desc">DevSecOps scanning</span>
+        </a>
+        <a class="sponsor-card" href="https://anthropic.com" target="_blank" style="--c:#f97316">
+          <span class="sponsor-icon">✦</span>
+          <span class="sponsor-name">Anthropic</span>
+          <span class="sponsor-desc">AI connector generation</span>
+        </a>
+        <a class="sponsor-card" href="https://daytona.io" target="_blank" style="--c:#10b981">
+          <span class="sponsor-icon">⬡</span>
+          <span class="sponsor-name">Daytona</span>
+          <span class="sponsor-desc">Sandboxed smoke testing</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Active connectors -->
+    <section class="section" id="active-section" style="display:none">
+      <div class="section-header">
+        <span class="section-label">Connected</span>
+      </div>
+      <div id="active-connectors" class="active-connectors"></div>
+    </section>
+
+    <!-- Catalog -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-label">Available connectors</span>
+        <span class="section-hint">Click any card to connect instantly</span>
+      </div>
+      <div id="catalog-grid" class="catalog-grid">
+        <div class="catalog-loading">Loading catalog…</div>
+      </div>
+    </section>
+
+    <!-- Pipeline log -->
+    <section class="section" id="pipeline-section" style="display:none">
+      <div class="section-header">
+        <span class="section-label">Generation pipeline</span>
+      </div>
+      <div class="pipeline-wrap">
+        <ol class="pipeline">
+          <li data-stage="generate"><span class="dot"></span><span class="stage-name">generate</span><span class="stage-detail"></span></li>
+          <li data-stage="scan"><span class="dot"></span><span class="stage-name">Opsera scan</span><span class="stage-detail"></span></li>
+          <li data-stage="sandbox"><span class="dot"></span><span class="stage-name">sandbox / smoke</span><span class="stage-detail"></span></li>
+          <li data-stage="register"><span class="dot"></span><span class="stage-name">register + hot-load</span><span class="stage-detail"></span></li>
+        </ol>
+        <pre id="pipeline-log" class="pipeline-log"></pre>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ── Chat view ───────────────────────────────────────────── -->
+  <div id="view-chat" style="display:none">
+    <div class="chat-header">
+      <button class="btn-back" id="closeChat">← Back</button>
+      <div>
+        <h2 class="chat-title">Create a connector</h2>
+        <p class="chat-sub">Describe any service — Conduit generates, scans, and loads it live</p>
+      </div>
+    </div>
+    <div id="chat-messages" class="chat-messages">
+      <div class="msg bot">
+        <div class="msg-avatar">⌁</div>
+        <div class="msg-bubble">
+          Hey! Tell me what you want to connect. I'll generate a live MCP connector in real time.<br><br>
+          Try: <em>"Connect HackerNews to get top stories"</em> or <em>"I need a Spotify connector"</em>
         </div>
       </div>
-      <div class="counter">
-        <div class="count" id="toolCount">0</div>
-        <div class="count-label">live tools</div>
-      </div>
-    </header>
+    </div>
+    <div class="chat-input-row">
+      <textarea id="chat-input" class="chat-input" rows="1"
+        placeholder="Describe the service you want to connect…"></textarea>
+      <button class="btn-send" id="chat-send">Send</button>
+    </div>
+  </div>
 
-    <main>
-      <section class="panel">
-        <h2>Connectors</h2>
-        <ul id="connectors" class="connectors"></ul>
-      </section>
+</div>
 
-      <section class="panel">
-        <h2>Generation pipeline</h2>
-        <ol id="pipeline" class="pipeline">
-          <li data-stage="generate"><span class="dot"></span><span class="name">generate</span><span class="detail"></span></li>
-          <li data-stage="scan"><span class="dot"></span><span class="name">Opsera scan</span><span class="detail"></span></li>
-          <li data-stage="sandbox"><span class="dot"></span><span class="name">sandbox / smoke</span><span class="detail"></span></li>
-          <li data-stage="register"><span class="dot"></span><span class="name">register + hot-load</span><span class="detail"></span></li>
-        </ol>
-      </section>
+<!-- ── Connect modal ─────────────────────────────────────── -->
+<div id="modal-bg" class="modal-bg" style="display:none">
+  <div id="modal" class="modal">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
 
-      <section class="panel logpanel">
-        <h2>Log</h2>
-        <pre id="log" class="log"></pre>
-      </section>
-    </main>
-
-    <footer id="conn" class="disconnected">connecting…</footer>
-    <script src="dashboard.js"></script>
-  </body>
+<footer id="conn" class="disconnected">connecting…</footer>
+<script src="dashboard.js"></script>
+</body>
 </html>
