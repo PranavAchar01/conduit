@@ -147,6 +147,10 @@ export function createGatewayServer(): Server {
       }
       // Also pass through everything in config (caller may have included extra vars)
       Object.assign(env, config);
+      // Special default: Obsidian uses the bundled sample vault when no path is supplied
+      if (serviceId === "obsidian" && !env.OBSIDIAN_VAULT_PATH) {
+        env.OBSIDIAN_VAULT_PATH = DEFAULT_VAULT;
+      }
 
       const result = await runPipeline(
         { name: serviceId, serviceDescription: entry.prompt, env },
